@@ -126,3 +126,5 @@ CORS_ALLOWED_ORIGINS = [
 CSRF_TRUSTED_ORIGINS = [
     "https://breathe-esg-platform-flax.vercel.app",
 ]
+
+# redeploy fix
