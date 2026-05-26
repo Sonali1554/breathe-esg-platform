@@ -128,3 +128,5 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 
 # redeploy fix
+
+REDEPLOY_VERSION = "1"
