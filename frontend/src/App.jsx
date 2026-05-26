@@ -7,15 +7,18 @@ function App() {
 
   const [records, setRecords] = useState([]);
 
+  const BASE_URL =
+    "https://breathe-esg-backend-m7vp.onrender.com";
+
   const fetchDashboardData = () => {
 
-    fetch("http://127.0.0.1:8000/api/dashboard/stats/")
+    fetch(`${BASE_URL}/api/dashboard/stats/`)
       .then((response) => response.json())
       .then((data) => {
         setStats(data);
       });
 
-    fetch("http://127.0.0.1:8000/api/records/recent/")
+    fetch(`${BASE_URL}/api/records/recent/`)
       .then((response) => response.json())
       .then((data) => {
         setRecords(data);
@@ -33,7 +36,7 @@ function App() {
     try {
 
       await fetch(
-        `http://127.0.0.1:8000/api/records/${id}/status/`,
+        `${BASE_URL}/api/records/${id}/status/`,
         {
           method: "POST",
 
