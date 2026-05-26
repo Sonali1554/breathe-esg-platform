@@ -14,12 +14,12 @@ DEBUG = os.environ.get(
 ) == "True"
 
 ALLOWED_HOSTS = [
-    "*"
+    "breathe-esg-backend-m7vp.onrender.com",
+    "localhost",
+    "127.0.0.1",
 ]
 
 INSTALLED_APPS = [
-
-    "corsheaders",
 
     "django.contrib.admin",
     "django.contrib.auth",
@@ -30,6 +30,8 @@ INSTALLED_APPS = [
 
     "rest_framework",
 
+    "corsheaders",
+
     "companies",
     "ingestion",
     "emissions",
@@ -38,9 +40,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
 
-    "corsheaders.middleware.CorsMiddleware",
-
     "django.middleware.security.SecurityMiddleware",
+
+    "corsheaders.middleware.CorsMiddleware",
 
     "django.contrib.sessions.middleware.SessionMiddleware",
 
@@ -84,31 +86,24 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE":
-        "django.db.backends.sqlite3",
+        "django.db.backends.postgresql",
 
         "NAME":
-        BASE_DIR / "db.sqlite3",
+        "breathe_esg_db",
+
+        "USER":
+        "postgres",
+
+        "PASSWORD":
+        "postgres",
+
+        "HOST":
+        "localhost",
+
+        "PORT":
+        "5432",
     }
 }
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME":
-        "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
-    },
-    {
-        "NAME":
-        "django.contrib.auth.password_validation.MinimumLengthValidator",
-    },
-    {
-        "NAME":
-        "django.contrib.auth.password_validation.CommonPasswordValidator",
-    },
-    {
-        "NAME":
-        "django.contrib.auth.password_validation.NumericPasswordValidator",
-    },
-]
 
 LANGUAGE_CODE = "en-us"
 
@@ -125,5 +120,9 @@ DEFAULT_AUTO_FIELD = (
 )
 
 CORS_ALLOWED_ORIGINS = [
+    "https://breathe-esg-platform-flax.vercel.app",
+]
+
+CSRF_TRUSTED_ORIGINS = [
     "https://breathe-esg-platform-flax.vercel.app",
 ]
