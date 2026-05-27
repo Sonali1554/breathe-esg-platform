@@ -1,66 +1,124 @@
 import { useEffect, useState } from "react";
-import UploadForm from "./components/UploadForm";
+import axios from "axios";
 
 function App() {
 
-  const [stats, setStats] = useState(null);
+  const [file, setFile] = useState(null);
 
   const [records, setRecords] = useState([]);
 
-  const BASE_URL =
+  const [stats, setStats] = useState({
+    total_records: 0,
+    flagged_records: 0,
+    scope1: 0,
+    scope2: 0,
+    scope3: 0,
+  });
+
+  const API_BASE =
     "https://breathe-esg-backend-m7vp.onrender.com";
 
-  const fetchDashboardData = () => {
+  const fetchRecords = async () => {
 
-    fetch(`${BASE_URL}/api/dashboard/stats/`)
-      .then((response) => response.json())
-      .then((data) => {
-        setStats(data);
-      });
+    try {
 
-    fetch(`${BASE_URL}/api/records/recent/`)
-      .then((response) => response.json())
-      .then((data) => {
-        setRecords(data);
-      });
+      const response = await axios.get(
+        `${API_BASE}/api/records/recent/`
+      );
+
+      setRecords(response.data);
+
+    } catch (error) {
+
+      console.error(error);
+    }
+  };
+
+  const fetchStats = async () => {
+
+    try {
+
+      const response = await axios.get(
+        `${API_BASE}/api/dashboard/stats/`
+      );
+
+      setStats(response.data);
+
+    } catch (error) {
+
+      console.error(error);
+    }
   };
 
   useEffect(() => {
 
-    fetchDashboardData();
+    fetchRecords();
+    fetchStats();
 
   }, []);
 
-  const updateStatus = async (id, status) => {
+  const handleUpload = async () => {
+
+    if (!file) {
+      alert("Please select a CSV file");
+      return;
+    }
+
+    const formData = new FormData();
+
+    formData.append("file", file);
 
     try {
 
-      await fetch(
-        `${BASE_URL}/api/records/${id}/status/`,
+      await axios.post(
+        `${API_BASE}/api/upload/sap/`,
+        formData,
         {
-          method: "POST",
-
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "multipart/form-data",
           },
-
-          body: JSON.stringify({
-            status: status,
-          }),
         }
       );
 
-      fetchDashboardData();
+      alert("Upload successful");
+
+      fetchRecords();
+      fetchStats();
 
     } catch (error) {
 
       console.error(error);
 
-      alert("Failed to update status");
+      alert("Upload failed");
+    }
+  };
+
+  const updateStatus = async (
+    id,
+    status
+  ) => {
+
+    try {
+
+      await axios.patch(
+        `${API_BASE}/api/records/${id}/`,
+        {
+          status: status,
+        }
+      );
+
+      fetchRecords();
+      fetchStats();
+
+    } catch (error) {
+
+      console.error(error);
     }
   };
 
   return (
+
     <div
       style={{
         padding: "40px",
@@ -79,118 +137,106 @@ function App() {
         Breathe ESG Dashboard
       </h1>
 
-      {stats && (
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: "20px",
-            marginBottom: "40px",
-          }}
-        >
-
-          <div style={cardStyle}>
-            <h2>Total Records</h2>
-            <h1>{stats.total_records}</h1>
-          </div>
-
-          <div style={cardStyle}>
-            <h2>Flagged Records</h2>
-            <h1>{stats.flagged_records}</h1>
-          </div>
-
-          <div style={cardStyle}>
-            <h2>Scope 1</h2>
-            <h1>{stats.scope1}</h1>
-          </div>
-
-          <div style={cardStyle}>
-            <h2>Scope 2</h2>
-            <h1>{stats.scope2}</h1>
-          </div>
-
-          <div style={cardStyle}>
-            <h2>Scope 3</h2>
-            <h1>{stats.scope3}</h1>
-          </div>
-
-        </div>
-      )}
-
       <div
         style={{
-          backgroundColor: "white",
-          padding: "30px",
-          borderRadius: "10px",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(3, 1fr)",
+          gap: "20px",
           marginBottom: "40px",
         }}
       >
 
-        <UploadForm />
+        <div style={cardStyle}>
+          <h2>Total Records</h2>
+          <h1>{stats.total_records}</h1>
+        </div>
+
+        <div style={cardStyle}>
+          <h2>Flagged Records</h2>
+          <h1>{stats.flagged_records}</h1>
+        </div>
+
+        <div style={cardStyle}>
+          <h2>Scope 1</h2>
+          <h1>{stats.scope1}</h1>
+        </div>
+
+        <div style={cardStyle}>
+          <h2>Scope 2</h2>
+          <h1>{stats.scope2}</h1>
+        </div>
+
+        <div style={cardStyle}>
+          <h2>Scope 3</h2>
+          <h1>{stats.scope3}</h1>
+        </div>
 
       </div>
 
-      <div
-        style={{
-          backgroundColor: "white",
-          padding: "30px",
-          borderRadius: "10px",
-          boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-        }}
-      >
+      <div style={sectionStyle}>
+
+        <h2>Upload SAP CSV</h2>
+
+        <input
+          type="file"
+          accept=".csv"
+          onChange={(e) =>
+            setFile(e.target.files[0])
+          }
+        />
+
+        <br /><br />
+
+        <button
+          onClick={handleUpload}
+        >
+          Upload
+        </button>
+
+      </div>
+
+      <div style={sectionStyle}>
 
         <h2>Recent Records</h2>
 
         <table
+          border="1"
+          cellPadding="10"
+          width="100%"
           style={{
-            width: "100%",
-            borderCollapse: "collapse",
+            borderCollapse:
+              "collapse",
           }}
         >
 
           <thead>
 
             <tr>
-
-              <th style={tableHeader}>Category</th>
-
-              <th style={tableHeader}>Quantity</th>
-
-              <th style={tableHeader}>Scope</th>
-
-              <th style={tableHeader}>Status</th>
-
-              <th style={tableHeader}>Action</th>
-
+              <th>Category</th>
+              <th>Quantity</th>
+              <th>Scope</th>
+              <th>Status</th>
+              <th>Action</th>
             </tr>
 
           </thead>
 
           <tbody>
 
-            {records.map((record, index) => (
+            {records.map((record) => (
 
-              <tr key={record.id || index}>
+              <tr key={record.id}>
 
-                <td style={tableCell}>
-                  {record.category}
-                </td>
+                <td>{record.category}</td>
 
-                <td style={tableCell}>
-                  {record.quantity}
-                </td>
+                <td>{record.quantity}</td>
 
-                <td style={tableCell}>
-                  {record.scope}
-                </td>
+                <td>{record.scope}</td>
 
-                <td style={tableCell}>
-                  {record.status}
-                </td>
+                <td>{record.status}</td>
 
-                <td style={tableCell}>
+                <td>
 
                   <button
                     onClick={() =>
@@ -199,12 +245,11 @@ function App() {
                         "APPROVED"
                       )
                     }
-                    style={{
-                      marginRight: "10px",
-                    }}
                   >
                     Approve
                   </button>
+
+                  {" "}
 
                   <button
                     onClick={() =>
@@ -220,6 +265,7 @@ function App() {
                 </td>
 
               </tr>
+
             ))}
 
           </tbody>
@@ -234,21 +280,20 @@ function App() {
 
 const cardStyle = {
   backgroundColor: "white",
-  padding: "20px",
+  padding: "30px",
   borderRadius: "10px",
-  boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
+  boxShadow:
+    "0 2px 10px rgba(0,0,0,0.1)",
   textAlign: "center",
 };
 
-const tableHeader = {
-  border: "1px solid #ddd",
-  padding: "12px",
-  backgroundColor: "#f0f0f0",
-};
-
-const tableCell = {
-  border: "1px solid #ddd",
-  padding: "12px",
+const sectionStyle = {
+  backgroundColor: "white",
+  padding: "30px",
+  borderRadius: "10px",
+  boxShadow:
+    "0 2px 10px rgba(0,0,0,0.1)",
+  marginBottom: "40px",
 };
 
 export default App;
